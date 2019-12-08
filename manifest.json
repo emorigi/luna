@@ -1,0 +1,10 @@
+{
+  "domain": "luna",
+  "name": "Luna",
+  "documentation": "https://www.home-assistant.io/integrations/luna",
+  "requirements": [],
+  "dependencies": [],
+  "codeowners": [
+    "@emorigi"
+  ]
+}
