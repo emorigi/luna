@@ -132,7 +132,8 @@ class MoonSensor(Entity):
 
     @property
     def state_attributes(self):
-        return { 'state': float(self._state) }
+        i=str(self._parametri['scan_interval'])
+        return { 'intervallo': i }
 
     async def async_update(self):
         x=interroga_snmp(self._parametri)
@@ -156,7 +157,7 @@ class MoonSensor(Entity):
                 delta=int(nuovo) - int(penultimo)
         dt=self._parametri[CONF_SCAN_INTERVAL]
         dts=float(dt.seconds)
-        _bps = float( ((float(delta)/ dts) / 1024)/1024 )
+        _bps = float( ( ( (float(delta)/ dts) *8) / 1024) )
         bps = round(_bps,3)
         self._state = bps
         _LOGGER.info("luna: "+self._name+" delta=|"+str(bps)+"|")
