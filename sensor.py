@@ -20,6 +20,7 @@ CONF_COMMUNITY = "community"
 CONF_VERSIONE = "version"
 CONF_SCAN_INTERVAL = "scan_interval"
 CONF_UNIT_OF_MEASUREMENT = "unit_of_measurement"
+CONF_ICON = "icon"
 DEFAULT_NAME = "Moon_IN"
 DEFAULT_OID = "1.3.6.1.2.1.31.1.1.1.6.2"
 DEFAULT_HOST = ""
@@ -27,7 +28,7 @@ DEFAULT_COMMUNITY = "public"
 DEFAULT_VERSIONE = "2c"
 DEFAULT_SCAN_INTERVAL = "10"
 DEFAULT_UNIT_OF_MEASUREMENT="Bps"
-
+DEFAULT_ICON = "mdi:upload"
 
 def interroga_snmp (parametri):
     oggetto=getCmd(SnmpEngine(),
@@ -58,7 +59,8 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
         vol.Optional(CONF_COMMUNITY, default=DEFAULT_COMMUNITY): cv.string,
         vol.Optional(CONF_VERSIONE, default=DEFAULT_VERSIONE): cv.string,
         vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL): cv.time_period,
-        vol.Optional(CONF_UNIT_OF_MEASUREMENT, default=DEFAULT_UNIT_OF_MEASUREMENT): cv.string
+        vol.Optional(CONF_UNIT_OF_MEASUREMENT, default=DEFAULT_UNIT_OF_MEASUREMENT): cv.string,
+        vol.Optional(CONF_ICON, default=DEFAULT_ICON): cv.string
     }
 )
 
@@ -81,7 +83,8 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
         "unit_of_measurement": config.get(CONF_UNIT_OF_MEASUREMENT),
         "version": config.get(CONF_VERSIONE),
         "scan_interval": config.get(CONF_SCAN_INTERVAL),
-        "host": config.get(CONF_HOST)
+        "host": config.get(CONF_HOST),
+        "icon": config.get(CONF_ICON)
     }
     # qui istanzio la classe..
     oggetto = MoonSensor(name,altro)
@@ -108,6 +111,16 @@ class MoonSensor(Entity):
 #        }
 
     @property
+    def icon(self):
+        """Return the icon to use in the frontend, if any."""
+        return self._parametri[CONF_ICON]
+
+    @property
+    def unit_of_measurement(self):
+        """Return the unit the value is expressed in."""
+        return self._parametri[CONF_UNIT_OF_MEASUREMENT]
+
+    @property
     def name(self):
         """Return the name of the device."""
         return self._name
@@ -116,11 +129,6 @@ class MoonSensor(Entity):
     def state(self):
         """Return the state of the device."""
         return self._state
-
-    @property
-    def icon(self):
-        """Icon to use in the frontend, if any."""
-        return ICON
 
     @property
     def state_attributes(self):
@@ -148,6 +156,7 @@ class MoonSensor(Entity):
                 delta=int(nuovo) - int(penultimo)
         dt=self._parametri[CONF_SCAN_INTERVAL]
         dts=float(dt.seconds)
-        bps = float( float(delta*8 )/ dts )
+        _bps = float( ((float(delta)/ dts) / 1024)/1024 )
+        bps = round(_bps,3)
         self._state = bps
         _LOGGER.info("luna: "+self._name+" delta=|"+str(bps)+"|")
